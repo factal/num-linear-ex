@@ -95,8 +95,6 @@ pub fn solve_8_1(size: usize, a: Vec<f64>, b: Vec<f64>, init: Vec<f64>, max_iter
         x_2 = &m_2_inv * (&n_2 * &x_2 + &b);
         x_3 = &m_3_inv * (&n_3 * &x_3 + &b);
 
-        log(&x_3.to_string());
-
         ans_1.push(x_1.clone().into_vec());
         ans_2.push(x_2.clone().into_vec());
         ans_3.push(x_3.clone().into_vec());
@@ -105,6 +103,34 @@ pub fn solve_8_1(size: usize, a: Vec<f64>, b: Vec<f64>, init: Vec<f64>, max_iter
     }
 
     [ans_1, ans_2, ans_3].concat().concat()
+}
+
+#[wasm_bindgen]
+pub fn solve_by_gauss_seidel(size: usize, a: Vec<f64>, b: Vec<f64>, init: Vec<f64>, max_iter: usize) -> Vec<f64> {
+    let a = Matrix::new(size, size, a);
+    let b = Vector::new(b);
+    let init = Vector::new(init);
+
+    let d = Matrix::from_diag(&a.diag().cloned().collect::<Vec<_>>());
+    let e = Matrix::new(size, size, a.iter().enumerate().map(|(i, x)| if i % size < i / size { *x } else { 0. }).collect::<Vec<_>>());
+    let f = Matrix::new(size, size, a.iter().enumerate().map(|(i, x)| if i % size > i / size { *x } else { 0. }).collect::<Vec<_>>());
+    let m = &d - &e;
+    let m_inv = m.clone().inverse().unwrap();
+
+    let mut x = Vector::from_iter(init.clone());
+
+    let mut ans = vec![];
+
+    let mut i = 0;
+    while i < max_iter {
+        x = &m_inv * (&f * &x + &b);
+
+        ans.push(x.clone().into_vec());
+
+        i += 1;
+    }
+
+    ans.concat()
 }
 
 #[wasm_bindgen]
