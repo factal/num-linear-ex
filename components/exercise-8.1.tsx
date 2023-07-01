@@ -161,7 +161,6 @@ function Ex_8_1() {
   }, [])
 
   useEffect(() => {
-    console.log('effected')
     solve(size, mat, vec).then(errors => {
       const newData = {
         labels,

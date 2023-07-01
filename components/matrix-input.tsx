@@ -35,12 +35,12 @@ function Matrix(props: {
   }, [vec, setVec])
 
   const renderMatObj = (mat: number[][]) => {
-    console.log('render mat obj')
     return mat.map((row, i) => {
       return <tr key={i} className="w-full whitespace-nowrap">
         {row.map((v, j) => {
           return <td key={j} className="whitespace-nowrap m-0">
             <Input
+              variant='soft'
               size='sm'
               sx={{ width: '48px', margin: '0px', textAlign: 'right' }}
               value={v}
@@ -53,12 +53,12 @@ function Matrix(props: {
   }
 
   const renderVecObj = (mat: number[][]) => {
-    console.log('render mat obj')
     return mat.map((row, i) => {
       return <tr key={i} className="w-full whitespace-nowrap">
         {row.map((v, j) => {
           return <td key={j} className="whitespace-nowrap m-0">
             <Input
+              variant='soft'
               size='sm'
               sx={{ width: '48px', margin: '0px', textAlign: 'right' }}
               value={v}
@@ -94,7 +94,7 @@ function Matrix(props: {
   const renderCoeffMat = () => {
     return (
       <Table
-        variant='outlined'
+        variant='soft'
         borderAxis='both'
         sx={{width: 'fit-content'}}
       >
@@ -108,7 +108,7 @@ function Matrix(props: {
   const renderVec = () => {
     return (
       <Table
-        variant='outlined'
+        variant='soft'
         borderAxis='both'
         sx={{width: 'fit-content'}}
       >
