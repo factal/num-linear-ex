@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "npm run wasm:build && next dev",
+    "build": "npm run wasm:build && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "wasm:build": "cd wasm && wasm-pack build"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
