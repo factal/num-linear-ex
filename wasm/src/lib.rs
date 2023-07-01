@@ -7,9 +7,6 @@ use wasm_bindgen::prelude::*;
 // use ndarray_linalg::*;
 use rulinalg::{matrix::*, vector::Vector};
 
-#[macro_use]
-extern crate rulinalg;
-
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -22,8 +19,27 @@ extern {
 }
 
 #[wasm_bindgen]
-pub fn greet() {
-    alert("Hello, wasm!");
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    // The `console.log` is quite polymorphic, so we can bind it with multiple
+    // signatures. Note that we need to use `js_name` to ensure we always call
+    // `log` in JS.
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_u32(a: u32);
+
+    // Multiple arguments too!
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_many(a: &str, b: &str);
+}
+
+#[wasm_bindgen]
+pub fn is_invertible(size: usize, a: Vec<f64>) -> bool {
+    let a = Matrix::new(size, size, a);
+    a.inverse().is_ok()
 }
 
 
@@ -79,6 +95,8 @@ pub fn solve_8_1(size: usize, a: Vec<f64>, b: Vec<f64>, init: Vec<f64>, max_iter
         x_2 = &m_2_inv * (&n_2 * &x_2 + &b);
         x_3 = &m_3_inv * (&n_3 * &x_3 + &b);
 
+        log(&x_3.to_string());
+
         ans_1.push(x_1.clone().into_vec());
         ans_2.push(x_2.clone().into_vec());
         ans_3.push(x_3.clone().into_vec());
@@ -89,25 +107,12 @@ pub fn solve_8_1(size: usize, a: Vec<f64>, b: Vec<f64>, init: Vec<f64>, max_iter
     [ans_1, ans_2, ans_3].concat().concat()
 }
 
-// #[wasm_bindgen]
-// pub fn solve(init: Vec<f64>, max_iter: usize) -> Vec<f64> {
-//     let a = matrix![1., 2., 2., 1.; -1., 2., 1., 0.; 0., 1., -2., 2.; 1., 2., 1., 2.];
-//     // let M = matrix![1., 0., 0., 0.; 0., 2., 0., 0.; 0., 0., -2., 0.; 0., 0., 0., 2.];
-//     // lower triangularize A
-//     let m = matrix![2., 0., 0., 0.; -2., 4., 0., 0.; 0., 2., -4., 0.; 2., 4., 2., 4.];
+#[wasm_bindgen]
+pub fn solve_linear(size: usize, a: Vec<f64>, b: Vec<f64>) -> Vec<f64> {
+    let a = Matrix::new(size, size, a);
+    let b = Vector::new(b);
 
-//     let m_inv = m.clone().inverse().unwrap();
-//     let n = &m - &a;
-//     let b = vector![1., 1., 1., 1.];
+    let x = a.solve(b).unwrap();
 
-//     let init = Vector::new(init);
-
-//     let x = solve_iterative(&m_inv, &n, &b, init);
-//     x.into_iter().collect()
-// }
-
-
-// fn solve_iterative(m_inv: &Matrix<f64>, n: &Matrix<f64>, b: &Vector<f64>, x: Vector<f64>) -> Vector<f64> {
-//     let ret = m_inv * (n * &x + b);
-//     ret
-// }
+    x.into_vec()
+}
