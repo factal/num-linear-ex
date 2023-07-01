@@ -5,6 +5,7 @@ import { ConvGraph, SuspenseGraph } from './conv-graph'
 import Matrix from './matrix-input'
 import { Container, CssVarsProvider, Divider, Sheet, Typography } from '@mui/joy'
 import { ChartData } from 'chart.js'
+import { useMediaQuery } from 'usehooks-ts'
 
 const ITER = 10
 
@@ -196,9 +197,11 @@ function Ex_8_1() {
     })
   }, [mat, vec])
 
+  const matches = useMediaQuery('(min-width: 768px)')
+
   return (
     <Container maxWidth='xl'>
-    <Sheet sx={{padding: '48px'}} >
+    <Sheet sx={{padding: matches ? '48px' : '12px'}} >
       
       <CssVarsProvider defaultColorScheme='dark'>
       <Typography level='h2'>Exercice 8.1</Typography>

@@ -14,7 +14,7 @@ function Matrix(props: {
 }) {
   const { size, setSize, mat, setMat, vec, setVec, startTransition } = props
 
-  const handleInputChange = useCallback((i: number, j: number, value: string) => {
+  const handleMatInputChange = useCallback((i: number, j: number, value: string) => {
     console.log('handle input change')
     startTransition(() => {
       const newMat = mat.map(row => [...row])
@@ -23,6 +23,16 @@ function Matrix(props: {
     })
     
   }, [mat, setMat])
+
+  const handleVecInputChange = useCallback((i: number, j: number, value: string) => {
+    console.log('handle input change')
+    startTransition(() => {
+      const newVec = vec.map(row => [...row])
+      newVec[i][j] = parseFloat(value)
+      setVec(newVec)
+    })
+    
+  }, [vec, setVec])
 
   const renderMatObj = (mat: number[][]) => {
     console.log('render mat obj')
@@ -34,7 +44,25 @@ function Matrix(props: {
               size='sm'
               sx={{ width: '48px', margin: '0px', textAlign: 'right' }}
               value={v}
-              onChange={(e) => handleInputChange(i, j, e.target.value)}
+              onChange={(e) => handleMatInputChange(i, j, e.target.value)}
+            />
+          </td>
+        })}
+      </tr>
+    })
+  }
+
+  const renderVecObj = (mat: number[][]) => {
+    console.log('render mat obj')
+    return mat.map((row, i) => {
+      return <tr key={i} className="w-full whitespace-nowrap">
+        {row.map((v, j) => {
+          return <td key={j} className="whitespace-nowrap m-0">
+            <Input
+              size='sm'
+              sx={{ width: '48px', margin: '0px', textAlign: 'right' }}
+              value={v}
+              onChange={(e) => handleVecInputChange(i, j, e.target.value)}
             />
           </td>
         })}
@@ -85,7 +113,7 @@ function Matrix(props: {
         sx={{width: 'fit-content'}}
       >
         <tbody>
-          {renderMatObj(vec)}
+          {renderVecObj(vec)}
         </tbody>
       </Table >
     )

@@ -19,6 +19,8 @@ import { Line } from 'react-chartjs-2'
 import { _DeepPartialObject } from 'chart.js/dist/types/utils'
 import { CircularProgress } from '@mui/joy'
 
+import { useMediaQuery } from 'usehooks-ts'
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,8 +31,9 @@ ChartJS.register(
   Legend
 )
 
-export const options: ChartOptions<'line'> = {
+const options: ChartOptions<'line'> = {
   responsive: true,
+  aspectRatio: 2,
   plugins: {
     legend: {
       position: 'top' as const,
@@ -76,7 +79,9 @@ for (let i = 0; i < ITER; i++) {
   labels.push(1 + i)
 }
 
-export async function ConvGraph(props: {graphData: ChartData<'line', number[]>}) {
+export function ConvGraph(props: {graphData: ChartData<'line', number[]>}) {
+  const matches = useMediaQuery('(min-width: 768px)')
+
   const graphRef = useRef<ChartJS>(null)
 
   useEffect(() => {
@@ -85,6 +90,15 @@ export async function ConvGraph(props: {graphData: ChartData<'line', number[]>})
       graphRef.current.update()
     }
   }, [props.graphData])
+
+  useEffect(() => {
+    if (graphRef.current) {
+      const newOptions = {...options, aspectRatio: matches ? 2 : 1}
+
+      graphRef.current.options = newOptions
+      graphRef.current.update()
+    }
+  }, [matches])
 
   const initData = {
     labels,
@@ -115,9 +129,23 @@ export async function ConvGraph(props: {graphData: ChartData<'line', number[]>})
       }
     ],
   }
+  
+  const onUpdate = () => {
 
-  // @ts-ignore
-  return <Line ref={graphRef} options={options} data={initData} />
+  }
+
+  
+  return(
+    <Line
+      height={undefined}
+      width={undefined}
+      // @ts-ignore
+      ref={graphRef}
+      options={options} 
+      data={initData}
+      
+    />
+  )
 }
 
 export default ConvGraph
@@ -156,7 +184,8 @@ export const SuspenseGraph = () => {
 
   return (
     <div>
-      <Line options={options} data={dummyData} />
+      <Line options={options} height={undefined}
+      width={undefined} data={dummyData} />
       <CircularProgress sx={{position: 'absolute'}} />
     </div>
     
