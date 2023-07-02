@@ -202,7 +202,7 @@ function Ex_8_1() {
     {/* <Sheet  > */}
       
       <CssVarsProvider defaultColorScheme='dark'>
-      <Typography level='display2'>Exercice 8.1</Typography>
+      <Typography level='display2'>Exercise 8.1</Typography>
       <div className='h-12' />
       <Suspense fallback={<SuspenseGraph />}>
         <ConvGraph
