@@ -15,30 +15,26 @@ function Matrix(props: {
   const { size, setSize, mat, setMat, vec, setVec, startTransition } = props
 
   const handleMatInputChange = useCallback((i: number, j: number, value: string) => {
-    console.log('handle input change')
     startTransition(() => {
       const newMat = mat.map(row => [...row])
       newMat[i][j] = parseFloat(value)
       setMat(newMat)
     })
-    
   }, [mat, setMat])
 
   const handleVecInputChange = useCallback((i: number, j: number, value: string) => {
-    console.log('handle input change')
     startTransition(() => {
       const newVec = vec.map(row => [...row])
       newVec[i][j] = parseFloat(value)
       setVec(newVec)
     })
-    
   }, [vec, setVec])
 
   const renderMatObj = (mat: number[][]) => {
     return mat.map((row, i) => {
-      return <tr key={i} className="w-full whitespace-nowrap">
+      return <tr key={i} className='w-full whitespace-nowrap'>
         {row.map((v, j) => {
-          return <td key={j} className="whitespace-nowrap m-0">
+          return <td key={j} className='m-0'>
             <Input
               variant='soft'
               size='sm'
