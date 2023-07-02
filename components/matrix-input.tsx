@@ -1,7 +1,51 @@
 'use client'
 
-import { Button, Input, Table, Typography } from '@mui/joy'
-import { TransitionStartFunction, useCallback } from 'react'
+import { Add, CheckCircle, ErrorOutline, Remove } from '@mui/icons-material'
+import { Card, CardActions, CardContent, Chip, Input, Stack, Table, Typography } from '@mui/joy'
+import { TransitionStartFunction, memo, useCallback, useState } from 'react'
+
+const checkInvertible = (size: number, mat: number[][]) => {
+  const rust = import('../wasm/pkg')
+
+  const a: Float64Array = Float64Array.from(mat.flat())
+
+  return rust.then(m => m.is_invertible(size, a))
+}
+
+function InputNumber(props: { value: number, onChange: (value: number) => void, onInvalidNumber: (value: string) => void }) {
+  console.log('input number has been rendered')
+  const { value, onChange, onInvalidNumber } = props
+
+  const [localValue, setLocalValue] = useState(props.value.toString())
+
+  const onChangeHandler = (value: string) => {
+    if (value === '') {
+      setLocalValue(value)
+      onInvalidNumber(value)
+      return
+    }
+    const newValue = Number(value)
+
+    if (isNaN(newValue)) {
+      setLocalValue(value)
+      onInvalidNumber(value)
+    } else {
+      setLocalValue(newValue.toString())
+      onChange(newValue)
+    }
+  }
+
+  return (
+    <Input
+      color={(isNaN(Number(localValue)) || localValue === '') ? 'danger' : 'neutral'}
+      variant='soft'
+      size='sm'
+      sx={{ width: '32px', margin: '0px', textAlign: 'right' }}
+      value={localValue}
+      onChange={e => onChangeHandler(e.target.value)}
+    />
+  )
+}
 
 function Matrix(props: {
   size: number,
@@ -10,37 +54,56 @@ function Matrix(props: {
   setMat: (mat: number[][]) => void,
   vec: number[][],
   setVec: (vec: number[][]) => void,
-  startTransition: TransitionStartFunction
+  startTransition: TransitionStartFunction,
+  isValidCalc: boolean
 }) {
-  const { size, setSize, mat, setMat, vec, setVec, startTransition } = props
+  const { size, setSize, mat, setMat, vec, setVec, startTransition, isValidCalc } = props
 
-  const handleMatInputChange = useCallback((i: number, j: number, value: string) => {
+  const [isValid, setIsValid] = useState(true)
+  const [isInvertible, setIsInvertible] = useState(true)
+
+  const handleMatInputChange = useCallback((i: number, j: number, value: number) => {
+    setIsValid(true)
     startTransition(() => {
       const newMat = mat.map(row => [...row])
-      newMat[i][j] = parseFloat(value)
+      newMat[i][j] = value
+      
       setMat(newMat)
+      checkInvertible(size, newMat).then(isInvertible => {
+        console.log(isInvertible)
+        setIsInvertible(isInvertible)
+        if (isInvertible) {
+          
+        }
+      })
+      
     })
   }, [mat, setMat])
 
-  const handleVecInputChange = useCallback((i: number, j: number, value: string) => {
+  const handleVecInputChange = useCallback((i: number, j: number, value: number) => {
+    setIsValid(true)
     startTransition(() => {
       const newVec = vec.map(row => [...row])
-      newVec[i][j] = parseFloat(value)
+      newVec[i][j] = value
       setVec(newVec)
     })
   }, [vec, setVec])
 
+
+
+  const handleInvalidNumber = () => {
+    setIsValid(false)
+  }
+
   const renderMatObj = (mat: number[][]) => {
     return mat.map((row, i) => {
-      return <tr key={i} className='w-full whitespace-nowrap'>
+      return <tr key={i} >
         {row.map((v, j) => {
           return <td key={j} className='m-0'>
-            <Input
-              variant='soft'
-              size='sm'
-              sx={{ width: '48px', margin: '0px', textAlign: 'right' }}
+            <InputNumber
               value={v}
-              onChange={(e) => handleMatInputChange(i, j, e.target.value)}
+              onChange={e => handleMatInputChange(i, j, e)}
+              onInvalidNumber={() => handleInvalidNumber()}
             />
           </td>
         })}
@@ -52,15 +115,15 @@ function Matrix(props: {
     return mat.map((row, i) => {
       return <tr key={i} className="w-full whitespace-nowrap">
         {row.map((v, j) => {
-          return <td key={j} className="whitespace-nowrap m-0">
-            <Input
-              variant='soft'
-              size='sm'
-              sx={{ width: '48px', margin: '0px', textAlign: 'right' }}
-              value={v}
-              onChange={(e) => handleVecInputChange(i, j, e.target.value)}
-            />
-          </td>
+          return (
+            <td key={j} className="whitespace-nowrap m-0">
+              <InputNumber
+                value={v}
+                onChange={e => handleVecInputChange(i, j, e)}
+                onInvalidNumber={() => handleInvalidNumber()}
+              />
+            </td>
+          )
         })}
       </tr>
     })
@@ -115,22 +178,74 @@ function Matrix(props: {
     )
   }
 
+  console.log('mat input fully rendered')
+
   return (
     <div>
-      <div className='h-12' />
+      <div className='h-8' />
+      {/* <Stack
+        spacing={0.5}
+        sx={{}}
+      > */}
+      <Card>
+        <div className='w-fit m-auto'>
+          <CardActions>
+            <div className='flex flex-row m-auto mb-4'>
+              <Chip variant='solid' color='neutral' onClick={onAdd}><Add /></Chip>
+              <Typography fontSize='xl' sx={{alignItems: 'flex-start', alignmentBaseline: 'central', paddingX: '12px'}} >{size}</Typography>
+              <Chip variant='solid' color='neutral' onClick={onSub}><Remove /></Chip>
+            </div>
+          </CardActions>
 
-      <div className='w-fit m-auto'>
-        <div className='flex flex-row m-auto'>
-          <Button variant='outlined' onClick={onAdd}>+</Button>
-          <Typography fontSize='xl' sx={{alignItems: 'flex-start', alignmentBaseline: 'central', paddingX: '12px'}} >{size}</Typography>
-          <Button variant='outlined' onClick={onSub}>-</Button>
+          
+          <CardContent>
+          <Stack spacing={1}>
+            <div className='flex flex-row w-fit gap-4'>
+              {renderCoeffMat()}
+              {renderVec()}
+            </div>
+
+            
+            
+          </Stack>
+          </CardContent>
+
+          
+          
         </div>
+        <Stack direction='row' spacing={2} justifyContent='center'>
+
+
+        <Typography
+                level='body3'
+                color='danger'
+                sx={{ alignSelf: 'flex-end'}}
+                startDecorator={isInvertible ? null : <ErrorOutline />}
+              >
+                {isInvertible ? '' : 'Not invertible'}
+              </Typography>
+
+              <Typography
+                level='body3'
+                color='danger'
+                sx={{ alignSelf: 'flex-end'}}
+                startDecorator={isValid ? null : <ErrorOutline />}
+              >
+                {isValid ? '' : 'Invalid input'}
+              </Typography>
+
+              <Typography
+                level='body3'
+                color='danger'
+                sx={{ alignSelf: 'flex-end'}}
+                startDecorator={isValidCalc ? null : <ErrorOutline />}
+              >
+                {isValidCalc ? '' : 'Invalid calculation: maybe one of M is not invertible'}
+              </Typography>
+              </Stack>
         
-        <div className='flex flex-row w-fit'>
-          {renderCoeffMat()}
-          {renderVec()}
-        </div>
-      </div>
+        
+      </Card>
       
     </div>
   )

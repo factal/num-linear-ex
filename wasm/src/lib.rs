@@ -39,6 +39,7 @@ extern "C" {
 #[wasm_bindgen]
 pub fn is_invertible(size: usize, a: Vec<f64>) -> bool {
     let a = Matrix::new(size, size, a);
+    log(&a.to_string());
     a.inverse().is_ok()
 }
 

@@ -63,7 +63,7 @@ async function solve(size: number, mat: number[][], vec: number[][]) {
   const b = Float64Array.from(vec.flat())
   
   const errors = await rust.then((m) => {
-    if (m.is_invertible(size, a)) {
+
       let temp: Float64Array = Float64Array.from(Array(size).fill(0))
       const iters: number[][] = [[], [], []]
       temp = m.solve_8_1(size, a, b, temp, ITER)
@@ -103,16 +103,10 @@ async function solve(size: number, mat: number[][], vec: number[][]) {
       }
 
       return errors
-    } else {
-      throw new Error('Matrix is not invertible')
-    }
-  }).catch((e) => {
-    console.error(e)
-    return [[], [], [], []]
-  })
-
+      // throw new Error('Matrix is not invertible')
+    })
   return errors
-}
+  }
 
 function Ex_8_1() {
   const [size, setSize] = useState(INITIAL_SIZE)
@@ -123,6 +117,8 @@ function Ex_8_1() {
   const [graphData, setGraphData] = useState<ChartData<'line', number[]>>(initialData)
 
   const [isPending, startTransition] = useTransition()
+
+  const [isValidCalc, setIsValidCalc] = useState(false)
 
   // initial calculation
   useEffect(() => {
@@ -193,17 +189,21 @@ function Ex_8_1() {
         ]
       }
       setGraphData(newData)
+      setIsValidCalc(true)
+    }).catch(err => {
+      setIsValidCalc(false)
     })
   }, [mat, vec])
 
   const matches = useMediaQuery('(min-width: 768px)')
 
   return (
-    <Container maxWidth='xl'>
-    <Sheet sx={{padding: matches ? '48px' : '12px'}} >
+    <Container maxWidth='xl' sx={{padding: matches ? '48px' : '12px'}}>
+    {/* <Sheet  > */}
       
       <CssVarsProvider defaultColorScheme='dark'>
-      <Typography level='h2'>Exercice 8.1</Typography>
+      <Typography level='display2'>Exercice 8.1</Typography>
+      <div className='h-12' />
       <Suspense fallback={<SuspenseGraph />}>
         <ConvGraph
           graphData={graphData}
@@ -222,9 +222,10 @@ function Ex_8_1() {
         vec={vec}
         setVec={setVec}
         startTransition={startTransition}
+        isValidCalc={isValidCalc}
       />
       </CssVarsProvider>
-    </Sheet>
+    {/* </Sheet> */}
     
     </Container>
     
