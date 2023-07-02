@@ -13,7 +13,6 @@ const checkInvertible = (size: number, mat: number[][]) => {
 }
 
 function InputNumber(props: { value: number, onChange: (value: number) => void, onInvalidNumber: (value: string) => void }) {
-  console.log('input number has been rendered')
   const { value, onChange, onInvalidNumber } = props
 
   const [localValue, setLocalValue] = useState(props.value.toString())
@@ -70,11 +69,7 @@ function Matrix(props: {
       
       setMat(newMat)
       checkInvertible(size, newMat).then(isInvertible => {
-        console.log(isInvertible)
         setIsInvertible(isInvertible)
-        if (isInvertible) {
-          
-        }
       })
       
     })
@@ -137,9 +132,16 @@ function Matrix(props: {
     setVec([...vec, [0]])
 
     setSize(size + 1)
+
+    checkInvertible(size, newMat).then(isInvertible => {
+      setIsInvertible(isInvertible)
+    })
   }
 
   const onSub = () => {
+    if (size === 1) {
+      return
+    }
     const newMat = mat.map(row => row.slice(0, size - 1))
     newMat.pop()
     setMat(newMat)
@@ -148,6 +150,10 @@ function Matrix(props: {
     setVec(newVec)
   
     setSize(size - 1)
+
+    checkInvertible(size, newMat).then(isInvertible => {
+      setIsInvertible(isInvertible)
+    })
   }
 
   const renderCoeffMat = () => {
@@ -178,8 +184,6 @@ function Matrix(props: {
     )
   }
 
-  console.log('mat input fully rendered')
-
   return (
     <div>
       <div className='h-8' />
@@ -193,7 +197,7 @@ function Matrix(props: {
             <div className='flex flex-row m-auto mb-4'>
               <Chip variant='solid' color='neutral' onClick={onAdd}><Add /></Chip>
               <Typography fontSize='xl' sx={{alignItems: 'flex-start', alignmentBaseline: 'central', paddingX: '12px'}} >{size}</Typography>
-              <Chip variant='solid' color='neutral' onClick={onSub}><Remove /></Chip>
+              <Chip variant='solid' color='neutral' onClick={onSub} disabled={size == 1}><Remove /></Chip>
             </div>
           </CardActions>
 
