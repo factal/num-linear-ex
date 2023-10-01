@@ -24,26 +24,6 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
-function logError(f, args) {
-    try {
-        return f.apply(this, args);
-    } catch (e) {
-        let error = (function () {
-            try {
-                return e instanceof Error ? `${e.message}\n\nStack:\n${e.stack}` : e.toString();
-            } catch(_) {
-                return "<failed to stringify thrown value>";
-            }
-        }());
-        console.error("wasm-bindgen: imported JS function that was not marked as `catch` threw an error:", error);
-        throw e;
-    }
-}
-
-function _assertNum(n) {
-    if (typeof(n) !== 'number') throw new Error('expected a number argument');
-}
-
 let cachedFloat64Memory0 = null;
 
 function getFloat64Memory0() {
@@ -67,7 +47,6 @@ function passArrayF64ToWasm0(arg, malloc) {
 * @returns {boolean}
 */
 export function is_invertible(size, a) {
-    _assertNum(size);
     const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.is_invertible(size, ptr0, len0);
@@ -113,14 +92,12 @@ function getArrayF64FromWasm0(ptr, len) {
 export function solve_8_1(size, a, b, init, max_iter) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        _assertNum(size);
         const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passArrayF64ToWasm0(b, wasm.__wbindgen_malloc);
         const len1 = WASM_VECTOR_LEN;
         const ptr2 = passArrayF64ToWasm0(init, wasm.__wbindgen_malloc);
         const len2 = WASM_VECTOR_LEN;
-        _assertNum(max_iter);
         wasm.solve_8_1(retptr, size, ptr0, len0, ptr1, len1, ptr2, len2, max_iter);
         var r0 = getInt32Memory0()[retptr / 4 + 0];
         var r1 = getInt32Memory0()[retptr / 4 + 1];
@@ -143,14 +120,12 @@ export function solve_8_1(size, a, b, init, max_iter) {
 export function solve_by_gauss_seidel(size, a, b, init, max_iter) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        _assertNum(size);
         const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passArrayF64ToWasm0(b, wasm.__wbindgen_malloc);
         const len1 = WASM_VECTOR_LEN;
         const ptr2 = passArrayF64ToWasm0(init, wasm.__wbindgen_malloc);
         const len2 = WASM_VECTOR_LEN;
-        _assertNum(max_iter);
         wasm.solve_by_gauss_seidel(retptr, size, ptr0, len0, ptr1, len1, ptr2, len2, max_iter);
         var r0 = getInt32Memory0()[retptr / 4 + 0];
         var r1 = getInt32Memory0()[retptr / 4 + 1];
@@ -163,6 +138,17 @@ export function solve_by_gauss_seidel(size, a, b, init, max_iter) {
 }
 
 /**
+* Solve real linear system Ax = b
+*
+* # Arguments
+*
+* * `size` - Size of the matrix
+* * `a` - Matrix A, stored in row-major order
+* * `b` - Vector b
+*
+* # Returns
+*
+* The solution of Ax = b i.e. x = A^-1 * b
 * @param {number} size
 * @param {Float64Array} a
 * @param {Float64Array} b
@@ -171,7 +157,6 @@ export function solve_by_gauss_seidel(size, a, b, init, max_iter) {
 export function solve_linear(size, a, b) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-        _assertNum(size);
         const ptr0 = passArrayF64ToWasm0(a, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passArrayF64ToWasm0(b, wasm.__wbindgen_malloc);
@@ -187,11 +172,7 @@ export function solve_linear(size, a, b) {
     }
 }
 
-export function __wbg_log_12af4e1f5b304c40() { return logError(function (arg0, arg1) {
+export function __wbg_log_12af4e1f5b304c40(arg0, arg1) {
     console.log(getStringFromWasm0(arg0, arg1));
-}, arguments) };
-
-export function __wbindgen_throw(arg0, arg1) {
-    throw new Error(getStringFromWasm0(arg0, arg1));
 };
 

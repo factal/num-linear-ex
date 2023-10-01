@@ -40,6 +40,17 @@ export function solve_8_1(size: number, a: Float64Array, b: Float64Array, init: 
 */
 export function solve_by_gauss_seidel(size: number, a: Float64Array, b: Float64Array, init: Float64Array, max_iter: number): Float64Array;
 /**
+* Solve real linear system Ax = b
+* 
+* # Arguments
+* 
+* * `size` - Size of the matrix
+* * `a` - Matrix A, stored in row-major order
+* * `b` - Vector b
+* 
+* # Returns
+* 
+* The solution of Ax = b i.e. x = A^-1 * b
 * @param {number} size
 * @param {Float64Array} a
 * @param {Float64Array} b

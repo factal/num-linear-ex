@@ -118,7 +118,7 @@ function Ex_8_1() {
 
   const [isPending, startTransition] = useTransition()
 
-  const [isValidCalc, setIsValidCalc] = useState(false)
+  const [isValidCalc, setIsValidCalc] = useState(true)
 
   // initial calculation
   useEffect(() => {
@@ -193,7 +193,7 @@ function Ex_8_1() {
     }).catch(err => {
       setIsValidCalc(false)
     })
-  }, [mat, vec])
+  }, [mat, size, vec])
 
   const matches = useMediaQuery('(min-width: 768px)')
 

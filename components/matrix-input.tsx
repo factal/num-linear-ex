@@ -1,8 +1,8 @@
 'use client'
 
 import { Add, CheckCircle, ErrorOutline, Remove } from '@mui/icons-material'
-import { Card, CardActions, CardContent, Chip, Input, Stack, Table, Typography } from '@mui/joy'
-import { TransitionStartFunction, memo, useCallback, useState } from 'react'
+import { Button, Card, CardActions, CardContent, Chip, Input, Stack, Table, Typography } from '@mui/joy'
+import { Key, TransitionStartFunction, memo, useCallback, useState } from 'react'
 
 const checkInvertible = (size: number, mat: number[][]) => {
   const rust = import('../wasm/pkg')
@@ -12,7 +12,7 @@ const checkInvertible = (size: number, mat: number[][]) => {
   return rust.then(m => m.is_invertible(size, a))
 }
 
-function InputNumber(props: { value: number, onChange: (value: number) => void, onInvalidNumber: (value: string) => void }) {
+function InputNumber(props: { key: Key, value: number, onChange: (value: number) => void, onInvalidNumber: (value: string) => void }) {
   const { value, onChange, onInvalidNumber } = props
 
   const [localValue, setLocalValue] = useState(props.value.toString())
@@ -36,6 +36,7 @@ function InputNumber(props: { value: number, onChange: (value: number) => void, 
 
   return (
     <Input
+      key={props.key}
       color={(isNaN(Number(localValue)) || localValue === '') ? 'danger' : 'neutral'}
       variant='soft'
       size='sm'
@@ -73,7 +74,7 @@ function Matrix(props: {
       })
       
     })
-  }, [mat, setMat])
+  }, [mat, setMat, size, startTransition])
 
   const handleVecInputChange = useCallback((i: number, j: number, value: number) => {
     setIsValid(true)
@@ -82,7 +83,7 @@ function Matrix(props: {
       newVec[i][j] = value
       setVec(newVec)
     })
-  }, [vec, setVec])
+  }, [startTransition, vec, setVec])
 
 
 
@@ -92,10 +93,11 @@ function Matrix(props: {
 
   const renderMatObj = (mat: number[][]) => {
     return mat.map((row, i) => {
-      return <tr key={i} >
+      return <tr key={`tr-mat${i}`} >
         {row.map((v, j) => {
-          return <td key={j} className='m-0'>
+          return <td key={`td-mat-${i}-${j}`} className='m-0 p-0'>
             <InputNumber
+              key={`input-mat-${i}-${j}`}
               value={v}
               onChange={e => handleMatInputChange(i, j, e)}
               onInvalidNumber={() => handleInvalidNumber()}
@@ -108,11 +110,12 @@ function Matrix(props: {
 
   const renderVecObj = (mat: number[][]) => {
     return mat.map((row, i) => {
-      return <tr key={i} className="w-full whitespace-nowrap">
+      return <tr key={`tr-vec-${i}`} className="w-full whitespace-nowrap">
         {row.map((v, j) => {
           return (
-            <td key={j} className="whitespace-nowrap m-0">
+            <td key={`td-vec-${i}-${j}`} className="whitespace-nowrap m-0">
               <InputNumber
+                key={`input-vec-${i}-${j}`}
                 value={v}
                 onChange={e => handleVecInputChange(i, j, e)}
                 onInvalidNumber={() => handleInvalidNumber()}
@@ -156,7 +159,8 @@ function Matrix(props: {
     })
   }
 
-  const renderCoeffMat = () => {
+  const CoeffMat = (props: {mat: number[][]}) => {
+    const { mat } = props
     return (
       <Table
         variant='soft'
@@ -170,7 +174,8 @@ function Matrix(props: {
     )
   }
 
-  const renderVec = () => {
+  const ConstVec = (props: {vec: number[][]}) => {
+    const { vec } = props
     return (
       <Table
         variant='soft'
@@ -182,6 +187,16 @@ function Matrix(props: {
         </tbody>
       </Table >
     )
+  }
+
+ const MemoCoeffMat = memo(CoeffMat)
+
+  const randomizeMatAndVec = () => {
+    const newMat = mat.map(row => row.map(() => Math.random() * 10))
+    const newVec = vec.map(row => row.map(() => Math.random() * 10))
+
+    setMat(newMat)
+    setVec(newVec)
   }
 
   return (
@@ -205,52 +220,46 @@ function Matrix(props: {
           <CardContent>
           <Stack spacing={1}>
             <div className='flex flex-row w-fit gap-4'>
-              {renderCoeffMat()}
-              {renderVec()}
+              <MemoCoeffMat mat={mat} />
+              <ConstVec vec={vec} />
             </div>
-
-            
-            
           </Stack>
           </CardContent>
-
-          
-          
         </div>
+
+        <Button>
+          <Typography level='body1' color='primary' onClick={randomizeMatAndVec}>Randomize</Typography>
+        </Button>
+        
         <Stack direction='row' spacing={2} justifyContent='center'>
+          <Typography
+            level='body3'
+            color='danger'
+            sx={{ alignSelf: 'flex-end'}}
+            startDecorator={isInvertible ? null : <ErrorOutline />}
+          >
+            {isInvertible ? '' : 'Not invertible'}
+          </Typography>
 
+          <Typography
+            level='body3'
+            color='danger'
+            sx={{ alignSelf: 'flex-end'}}
+            startDecorator={isValid ? null : <ErrorOutline />}
+          >
+            {isValid ? '' : 'Invalid input'}
+          </Typography>
 
-        <Typography
-                level='body3'
-                color='danger'
-                sx={{ alignSelf: 'flex-end'}}
-                startDecorator={isInvertible ? null : <ErrorOutline />}
-              >
-                {isInvertible ? '' : 'Not invertible'}
-              </Typography>
-
-              <Typography
-                level='body3'
-                color='danger'
-                sx={{ alignSelf: 'flex-end'}}
-                startDecorator={isValid ? null : <ErrorOutline />}
-              >
-                {isValid ? '' : 'Invalid input'}
-              </Typography>
-
-              <Typography
-                level='body3'
-                color='danger'
-                sx={{ alignSelf: 'flex-end'}}
-                startDecorator={isValidCalc ? null : <ErrorOutline />}
-              >
-                {isValidCalc ? '' : 'Invalid calculation: maybe one of M is not invertible'}
-              </Typography>
-              </Stack>
-        
-        
+          <Typography
+            level='body3'
+            color='danger'
+            sx={{ alignSelf: 'flex-end'}}
+            startDecorator={isValidCalc ? null : <ErrorOutline />}
+          >
+            {isValidCalc ? '' : 'Invalid calculation: maybe one of M is not invertible'}
+          </Typography>
+        </Stack>
       </Card>
-      
     </div>
   )
 }
